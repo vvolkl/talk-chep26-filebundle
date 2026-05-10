@@ -2,18 +2,18 @@
 #import "../theme.typ": *
 
 #let item(title, color, body) = [
-  #set text(size: 14pt, fill: text-dark)
+  #set text(size: 18pt, fill: text-dark)
   #set par(leading: 0.55em, spacing: 0.55em)
-  #text(size: 18pt, weight: "bold", fill: color)[#title] \
+  #text(size: 22pt, weight: "bold", fill: color)[#title] \
   #body
 ]
 
 #slide[
-  #set page(header: none, footer: none, margin: 0pt, fill: ppx-bg)
+  #set page(header: none, footer: chep-footer, margin: (rest: 0pt, bottom: 0.95in), fill: ppx-bg)
 
   #place(top + left, dx: 0.55in, dy: 0.35in)[
     #text(size: 30pt, weight: "bold", fill: text-dark)[
-      Further work
+      Outlook - possible improvements
     ]
   ]
 
@@ -24,20 +24,16 @@
     #box(width: 5.85in)[
       #set list(indent: 0.4em, body-indent: 0.65em, marker: text(fill: highlight)[•])
 
-      - #item("General perf improvement with FUSE passthrough  (RHEL10 / kernel ≥ 6.9)", accent-blue)[
-          On `open()` the cvmfs2 daemon hands the kernel an FD to the
-          backing cache file (`FUSE_DEV_IOC_BACKING_OPEN`). Subsequent
-          reads bypass FUSE entirely — direct kernel I/O on the cache
-          object, zero daemon round-trips. Removes per-syscall upcall
-          overhead on warm files; especially impactful for small-file
-          workloads.
+      - #item("FUSE passthrough  (2.14, RHEL10 / kernel ≥ 6.9)", accent-blue)[
+          - General performance improvement thanks to new FUSE feature
+          - On `open()` CVMFS hands the kernel an FD to the backing cache file. 
+          - Subsequent reads bypass FUSE entirely — direct kernel I/O on the cache object. 
+          - Already available in 2.14, but needs to be benchmarked
         ]
 
       #v(0.7em)
 
-      - #item("Offline mode  (persistency in cache)", accent-green)[
-          Give users possibility to partially persist parts of a CVMFS repository on their workstations. Integrates with "shrinkwrap" tooling needed for HPC.
-        ]
+  
     ]
   ]
 
@@ -47,8 +43,14 @@
       #set align(left)
       #set list(indent: 0.4em, body-indent: 0.65em, marker: text(fill: highlight)[•])
 
-      - #item("Packfiles for small files  (storage layer)", accent-amber)[
-          Use packfiles for small objects to limit the number of network requests. Backwards compatibility only with significant effort, however
+          - #item("Offline mode / partial persistency in cache (to be seen)", accent-green)[
+          - Give users possibility to partially persist parts of a CVMFS repository on their workstations.
+          - Integrates with "shrinkwrap" tooling needed for HPC.
+        ]
+
+      - #item("Packfiles for small files (2.15?)", accent-amber)[
+          - Use packfiles for small objects already in backend storage to limit the number of network requests. 
+          - Backwards compatibility only with significant effort, however
         ]
 
       #v(1.2em)

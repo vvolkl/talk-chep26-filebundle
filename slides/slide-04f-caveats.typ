@@ -1,8 +1,9 @@
 #import "@preview/polylux:0.4.0": *
+#import "@preview/shadowed:0.3.0": shadow
 #import "../theme.typ": *
 
 #slide[
-  #set page(header: none, footer: none, margin: 0pt, fill: ppx-bg)
+  #set page(header: none, footer: chep-footer, margin: (rest: 0pt, bottom: 0.95in), fill: ppx-bg)
 
   #place(top + left, dx: 0.55in, dy: 0.35in)[
     #text(size: 28pt, weight: "bold", fill: text-dark)[
@@ -10,12 +11,10 @@
     ]
   ]
 
-  #place(top + left, dx: 0.35in + 6pt, dy: 1.20in + 6pt)[
-    #rect(width: 5.85in * (1600 / 1100), height: 5.85in,
-          fill: rgb("#00000026"), stroke: none, radius: 4pt)
-  ]
   #place(top + left, dx: 0.35in, dy: 1.20in)[
-    #image("../assets/req_burst.pdf", height: 5.85in)
+    #shadow(dx: -6pt, dy: 6pt, blur: 10pt, fill: rgb(0, 0, 0, 38%), radius: 4pt)[
+      #image("../assets/req_burst.pdf", height: 5.30in)
+    ]
   ]
 
   #place(top + right, dx: -0.55in, dy: 1.40in)[

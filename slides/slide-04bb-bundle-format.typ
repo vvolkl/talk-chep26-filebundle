@@ -42,66 +42,22 @@
 ]
 
 #slide[
-  #set page(header: none, footer: none, margin: 0pt, fill: ppx-bg)
+  #set page(header: none, footer: chep-footer, margin: (rest: 0pt, bottom: 0.95in), fill: ppx-bg)
 
   #place(top + left, dx: 0.6in, dy: 0.35in)[
     #text(size: 30pt, weight: "bold", fill: text-dark)[
-      Publishing a bundle — librarian workflow (2/2)
+      Publishing a filebundle — librarian workflow
     ]
   ]
 
-  #place(top + left, dx: 0.6in, dy: 0.95in)[
-    #box(width: 12.0in)[
-      #set text(size: 16pt, fill: text-mid)
-      Spec format and what `cvmfs_server publish` does with it.
-    ]
-  ]
+  
 
   // LEFT — step 3 + on-disk layout
   #place(top + left, dx: 0.5in, dy: 1.55in)[
     #box(width: 6.0in)[
-      #stack(dir: ttb, spacing: 0.55em,
-
-        step-card(
-          "3", "Publish", "cvmfs_server transaction / publish",
-          [
-            #set text(size: 14pt, fill: text-dark)
-            Drop the spec file next to its trigger and publish.
-            #raw("cvmfs_server publish") sees the
-            #raw(".cvmfsbundle-") prefix and flips the
-            #kw(highlight)[bundle-trigger] flag on
-            #raw("__init__.py") in the catalog.
-
-            #v(0.4em)
-            #cmd-block[
-              #text(fill: accent-green)[\$] cvmfs_server transaction my.repo \
-              #text(fill: accent-green)[\$] cp #raw(".cvmfsbundle-__init__.py") \\\
-              #h(2em) /cvmfs/my.repo/ROOT/ \
-              #text(fill: accent-green)[\$] cvmfs_server publish my.repo
-            ]
-          ],
-        ),
-
-        box(
-          width: 100%,
-          inset: (x: 0.95em, y: 0.85em),
-          fill: accent-amber.transparentize(94%),
-          stroke: 1.5pt + accent-amber,
-          radius: 6pt,
-        )[
-          #set text(size: 14pt, fill: text-dark)
-          #kw(accent-amber)[On disk, one spec per trigger:]
-          #v(0.25em)
-          #set text(size: 13pt, font: "Menlo", fill: text-dark)
-          #set par(leading: 0.55em)
-          #raw("ROOT/__init__.py") #h(0.5em) #text(fill: text-light)[← bundle trigger] \
-          #raw("ROOT/.cvmfsbundle-__init__.py") #h(0.5em) #text(fill: text-light)[← spec (JSON deps)]
-          #v(0.3em)
-          #set text(size: 13pt, fill: text-mid, font: "Atkinson Hyperlegible")
-          Client #raw("open()") on the trigger → bundle manager loads the
-          spec, fetches every entry in parallel.
-        ],
-      )
+      #stack(dir: ttb, spacing: 0.55em, )
+      - Find a suitable triggerfile
+        - #raw("__init__.py") is
     ]
   ]
 
@@ -116,8 +72,9 @@
         radius: 6pt,
       )[
         #set text(size: 14pt, fill: text-dark)
+        #set align(left)
         #stack(dir: ltr, spacing: 0.6em,
-          text(weight: "bold")[Example],
+          text(weight: "bold")[Example filebundle],
           box(
             inset: (x: 0.4em, y: 0.1em),
             fill: ppx-bg,
@@ -129,6 +86,7 @@
         #v(0.45em)
         #set text(size: 11.5pt, font: "Menlo", fill: text-dark)
         #set par(leading: 0.4em)
+        #set align(left)
         #text(fill: text-light)[\#%CVMFS_BUNDLE version=1 encoding=UTF-8] \
         \{ \
         #h(1em)"name": "CVMFS_BUNDLE", \
@@ -151,8 +109,7 @@
         #v(0.5em)
         #set text(size: 12pt, fill: text-mid, font: "Atkinson Hyperlegible")
         #set par(leading: 0.5em)
-        Header line carries the format version; the JSON body has a single
-        flat #raw("dependencies") array of catalog-relative paths.
+        JSON file with minial metadata, and a flat list of files that are likely to be read after the trigger.
       ]
     ]
   ]

@@ -2,46 +2,38 @@
 #import "../theme.typ": *
 
 #slide[
-  #set page(header: none, footer: none, margin: 0pt, fill: ppx-bg)
+  #set page(header: none, footer: chep-footer, margin: (rest: 0pt, bottom: 0.95in), fill: ppx-bg)
 
   #place(top + left, dx: 0.6in, dy: 0.55in)[
     #text(size: 34pt, weight: "bold", fill: text-dark)[CernVM-Filesystem]
   ]
 
-  // Left: terminal showing bash command-not-found hook
+  // Top-left: ROOT install from a release tarball
   #place(top + left, dx: 0.3in, dy: 1.55in)[
     #box(
       width: 5in,
       radius: 8pt,
       clip: true,
     )[
-      // Title bar
-  //    #block(
-  //      width: 100%,
- //       inset: (x: 05em, y: 0.4em),
-  //      fill: rgb("#3C3C3C"),
- //     )[
- //       #set align(center)
-        //#text(size: 12pt, font: "Menlo", fill: rgb("#AAAAAA"))[bash]
-  //    ]// Terminal body
       #block(
         width: 100%,
         inset: (x: 0.9em, y: 0.75em),
         fill: rgb("#1E1E1E"),
       )[
-        #set text(size: 15pt, font: "Menlo")
+        #set text(size: 14pt, font: "Menlo")
         #set par(leading: 0.6em, spacing: 0em)
-        #text(fill: rgb("#4EC9B0"))[\[user\@host \~\]\$ ]#text(fill: rgb("#D4D4D4"))[python hello.py]\
+        #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[wget root.cern/dl/root_v6.36.12-linux.tar.gz]\
         #v(0.4em)
-        #text(fill: rgb("#F44747"))[-bash: python: command not found]\
-        #v(0.6em)
-        #text(fill: rgb("#DCDCAA"))[Did you mean to install \'python\'\
-        from package \'python\'?]
+        #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[tar -xzf root_v6.36.12-linux.tar.gz]\
+        #v(0.4em)
+        #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[source root/bin/thisroot.sh]\
+        #v(0.4em)
+        #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[python -c "import ROOT"]
       ]
     ]
   ]
 
-  // Left-bottom: same command, now resolved via EESSI on CVMFS
+  // Bottom-left: same goal, resolved via the LCG view on CVMFS
   #place(top + left, dx: 0.3in, dy: 3.9in)[
     #box(
       width: 5in,
@@ -53,13 +45,12 @@
         inset: (x: 0.9em, y: 0.75em),
         fill: rgb("#1E1E1E"),
       )[
-        #set text(size: 15pt, font: "Menlo")
+        #set text(size: 14pt, font: "Menlo")
         #set par(leading: 0.6em, spacing: 0em)
-        #text(fill: rgb("#4EC9B0"))[\[user\@host \~\]\$ ]#text(fill: rgb("#D4D4D4"))[source /cvmfs/software.eessi.io/versions/2023.06/init/bash]\
+        #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[source /cvmfs/sft.cern.ch/lcg/views/\\]\
+        #h(2.0em)#text(fill: rgb("#D4D4D4"))[LCG_109/x86_64-el9-gcc13-opt/setup.sh]\
         #v(0.4em)
-        #text(fill: rgb("#DCDCAA"))[\{EESSI 2023.06\} ]#text(fill: rgb("#4EC9B0"))[\[user\@host \~\]\$ ]#text(fill: rgb("#D4D4D4"))[python hello.py]\
-        #v(0.4em)
-        #text(fill: rgb("#6FCF97"))[Hello, EESSI!]
+        #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[python -c "import ROOT"]
       ]
     ]
   ]

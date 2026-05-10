@@ -32,3 +32,14 @@
 )
 
 #let kw(c, body) = text(fill: c, weight: "bold", body)
+
+#let chep-footer = context {
+  set text(size: 12pt, fill: text-mid)
+  grid(
+    columns: (1fr, 2fr, 1fr),
+    align: (left + bottom, center + bottom, right + bottom),
+    image("assets/sft-banner-positive.png", height: 0.50in),
+    [Valentin Volkl --- CERN EP-SFT --- CHEP 2026],
+    pad(right: 0.30in, counter(page).display()),
+  )
+}

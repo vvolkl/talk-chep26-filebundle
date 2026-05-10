@@ -19,16 +19,18 @@
   #set align(top + left)
 
   #place(top + left, dx: 0.5in, dy: 1.15in)[
-    #box(width: 9.6in)[
-      #text(size: 40pt, weight: "bold", fill: text-dark)[CernVM-FS Filebundles for low-latency data distribution in interactive usecases]
+    #box(width: 9.8in)[
+      #text(size: 40pt, weight: "bold", fill: text-dark)[CernVM-FS Filebundles] \  #text(size: 30pt, weight: "bold", fill: text-dark)[for low-latency software distribution  \ in interactive usecases]
 
       #v(0.45em)
 
-  
+
 
       #v(0.9em)
 
-      #text(size: 14pt, fill: text-dark)[Valentin Volkl (valentin.volkl\@cern.ch), Georgios Christodoulis (georgios.christodoulis\@cern.ch), Jakob Blomer (jakob.blomer\@cern.ch)]
+      #text(size: 18pt, fill: text-dark)[Valentin Volkl (valentin.volkl\@cern.ch), \
+      Georgios Christodoulis (georgios.christodoulis\@cern.ch), \
+      Jakob Blomer (jakob.blomer\@cern.ch)]
     ]
   ]
 
@@ -39,10 +41,12 @@
     ]
   ]
 
+  #place(bottom + left, dx: 0.5in, dy: -0.45in)[
+    #image("assets/sft-banner-positive.png", height: 1.0in)
+  ]
 
-
-  #place(bottom + left, dx: 0.25in, dy: -0.25in)[
-    #image("assets/sft-banner-positive.png", width: 2.4in)
+  #place(bottom + right, dx: -0.55in, dy: -0.4in)[
+    #image("assets/cvmfs-logo.png", height: 1.4in)
   ]
 ]
 
@@ -51,14 +55,14 @@
 // strata + proxy + client-cache hierarchy diagram
 #include "slides/slide-01ab-architecture.typ"
 
-#include "slides/slide-01b-client-server.typ"
+//#include "slides/slide-01b-client-server.typ"
 
 
 // implementation idea and how it works
 #include "slides/slide-04b-filebundle.typ"
 
 // librarian workflow — capture trace, build spec, publish
-#include "slides/slide-04ba-publish.typ"
+//#include "slides/slide-04ba-publish.typ"
 #include "slides/slide-04bb-bundle-format.typ"
 
 // performance results
@@ -71,5 +75,8 @@
 
 // further work — direct I/O, packfiles, offline mode
 #include "slides/slide-06-further-work.typ"
+
+// terse wrap-up + violin recap
+#include "slides/slide-07-conclusions.typ"
 
 #include "slides/slide-99-contact.typ"

@@ -2,7 +2,7 @@
 #import "../theme.typ": *
 
 #slide[
-  #set page(header: none, footer: none, margin: 0pt, fill: ppx-bg)
+  #set page(header: none, footer: chep-footer, margin: (rest: 0pt, bottom: 0.95in), fill: ppx-bg)
 
   #place(top + left, dx: 0.6in, dy: 0.55in)[
     #text(size: 34pt, weight: "bold", fill: text-dark)[Client vs. Server]

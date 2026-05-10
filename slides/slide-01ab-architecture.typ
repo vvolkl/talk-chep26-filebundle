@@ -15,11 +15,11 @@
 ]
 
 #slide[
-  #set page(header: none, footer: none, margin: 0pt, fill: ppx-bg)
+  #set page(header: none, footer: chep-footer, margin: (rest: 0pt, bottom: 0.95in), fill: ppx-bg)
 
   #place(top + left, dx: 0.55in, dy: 0.35in)[
     #text(size: 28pt, weight: "bold", fill: text-dark)[
-      CVMFS — strata, proxies, and a stack of caches
+      CVMFS — cache hierarchy
     ]
   ]
 
@@ -34,7 +34,7 @@
 
   // LEFT — architecture diagram
   #place(top + left, dx: 0.45in, dy: 1.95in)[
-    #image("../assets/cvmfs_hierarchy.png", height: 4.85in)
+    #image("../assets/cvmfs_hierarchy.png", height: 4.55in)
   ]
 
   // RIGHT — tiered explanation + analogy
@@ -58,9 +58,14 @@
           clients on the same network start the same software.
         ],
 
-        tier("Client cache", accent-amber)[
-          Per-node disk cache + Linux kernel page cache. First open is a
-          miss, subsequent opens are essentially free.
+        tier("Client disk cache", accent-amber)[
+          Per-node on-disk cache. First open of a file fetches it from
+          the closest upstream tier and writes it here.
+        ],
+
+        tier("Kernel page cache", rgb("#A8392F"))[
+          Linux page cache sits on top of the disk cache — warm reads
+          don't hit cvmfs2 or the disk at all.
         ],
       )
 
