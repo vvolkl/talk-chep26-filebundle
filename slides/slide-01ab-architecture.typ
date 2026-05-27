@@ -1,48 +1,55 @@
 #import "@preview/polylux:0.4.0": *
 #import "../theme.typ": *
 
+#let pw = 13.333in
+#let ph = 7.5in
+
 #let tier(name, color, body) = box(
   width: 100%,
-  inset: (x: 0.7em, y: 0.45em),
+  inset: (x: 0.7em, y: 0.3em),
   fill: color.transparentize(93%),
   stroke: 1.2pt + color,
   radius: 5pt,
 )[
-  #set text(size: 14pt, fill: text-dark)
-  #set par(leading: 0.5em)
-  #text(size: 15pt, weight: "bold", fill: color)[#name] \
+  #set text(size: 13pt, fill: text-dark)
+  #set par(leading: 0.4em)
+  #text(size: 14pt, weight: "bold", fill: color)[#name] \
   #body
 ]
 
 #slide[
-  #set page(header: none, footer: chep-footer, margin: (rest: 0pt, bottom: 0.95in), fill: ppx-bg)
+  #set page(
+    header: none,
+    footer: chep-footer,
+    margin: (left: 0.04 * pw, right: 0.04 * pw, top: 0.05 * ph, bottom: 0.13 * ph),
+    fill: ppx-bg,
+  )
 
-  #place(top + left, dx: 0.55in, dy: 0.35in)[
-    #text(size: 28pt, weight: "bold", fill: text-dark)[
-      CVMFS — cache hierarchy
-    ]
+  #text(size: 28pt, weight: "bold", fill: text-dark)[
+    CVMFS — cache hierarchy
   ]
 
-  #place(top + left, dx: 0.55in, dy: 1.05in)[
-    #box(width: 12.0in)[
+  #v(-0.04 * ph)
+
+  #grid(
+    columns: (1fr, 0.375 * pw),
+    column-gutter: 0.03 * pw,
+    align: top + left,
+
+    // LEFT — subtitle + architecture diagram
+    [
       #set text(size: 15pt, fill: text-mid)
       Read-only object store with HTTP fan-out and caching at every hop —
       every byte is content-addressed, so anything in any cache is reusable
       forever.
-    ]
-  ]
 
-  // LEFT — architecture diagram
-  #place(top + left, dx: 0.45in, dy: 1.95in)[
-    #image("../assets/cvmfs_hierarchy.png", height: 4.55in)
-  ]
+      #v(0.01 * ph)
+      #image("../assets/cvmfs_hierarchy.png", height: 0.59 * ph)
+    ],
 
-  // RIGHT — tiered explanation + analogy
-  #place(top + right, dx: -0.55in, dy: 1.85in)[
-    #box(width: 5.0in)[
-      #set align(left)
-      #stack(dir: ttb, spacing: 0.45em,
-
+    // RIGHT — tiered explanation + analogy
+    [
+      #stack(dir: ttb, spacing: 0.3em,
         tier("Stratum 0", accent-purple)[
           The origin. One per repo, owned by the librarian. Where
           #raw("cvmfs_server publish") writes.
@@ -69,10 +76,10 @@
         ],
       )
 
-      #v(0.55em)
+      #v(0.3em)
       #box(
         width: 100%,
-        inset: (x: 0.7em, y: 0.55em),
+        inset: (x: 0.7em, y: 0.4em),
         fill: panel-bg,
         stroke: 1pt + text-light,
         radius: 5pt,
@@ -84,6 +91,6 @@
         store in town, Stratum 1 a regional roaster, Stratum 0 the
         plantation. Each layer hides the latency of the next.
       ]
-    ]
-  ]
+    ],
+  )
 ]

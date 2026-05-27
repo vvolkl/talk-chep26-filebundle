@@ -1,0 +1,140 @@
+Slide 1 — Title
+
+Hello, I’m Valentin Volkl, lead developer of CernVM-FS. Today I’ll talk about CernVM-FS filebundles, and how they can improve startup latency for interactive software use cases.
+
+This work was a joint effort by the CernVM-FS team at CERN, in particular Georgios Christodoulis, who implemented most of the feature, together with Jakob Blomer and myself.
+
+
+Slide 2 — What is CernVM-FS?
+
+CernVM-FS is a global, on-demand, read-only filesystem for software distribution.
+
+The basic idea is simple: instead of downloading and unpacking a full software stack in advance, users access it directly from a globally available repository under /cvmfs. Files are fetched only when they are actually opened. Downloading, decompression, and caching all happen transparently behind the scenes.
+
+For users, this feels a bit like a streaming service for scientific software: you start using it immediately, and only the parts you need are transferred.
+
+
+Slide 3 — Scale and infrastructure
+
+CernVM-FS is a core component of the Worldwide LHC Computing Grid, but it is also used well beyond high-energy physics, for example by Euclid, LIGO, LSST, SKA, and EESSI.
+
+Today, the infrastructure spans roughly 15 Stratum 1 servers across Europe, North and South America, and Asia. Through /cvmfs, users can access on the order of 33 billion files and about 2 petabytes of data, with proven scaling to much larger installations. It also serves more than 8,000 container images, and the number of repositories continues to grow steadily.
+
+
+Slide 4 — Motivation
+
+So why are we interested in filebundles?
+
+At the CernVM Users Workshop in 2022, Chris Burr from LHCb highlighted an important practical issue: in interactive sessions, CVMFS can often be about 3 to 5 times slower than local disk, even with a hot cache.
+
+That is not really a problem for distributed batch computing, where the benefits of a shared software distribution system clearly dominate. But in interactive work, startup latency matters a lot. If opening an analysis environment takes too long, the user experience suffers.
+
+
+Slide 5 — The same effect on our testbed
+
+We can reproduce the same picture very easily on our own testbed.
+
+If we install ROOT from a release tarball on local disk, importing ROOT in Python takes about 2.47 seconds. If we use the same software stack from /cvmfs with a cold cache, the time increases to about 4.69 seconds.
+
+In this setup, the network path is very short, so this is not mainly a bandwidth problem. It confirms that a significant part of the delay comes from the way CVMFS serves many files on demand.
+
+
+Slide 6 — Where does the time go?
+
+This slide shows the cold-cache timeline conceptually.
+
+When an application such as ROOT starts, it opens many files one after another. For each file, CVMFS has to handle a FUSE upcall, send an HTTP request, wait for the round trip, download the object, decompress it, and then return the data. That overhead is paid again and again.
+
+So even though the total amount of work is not surprising, the serialized per-file overhead adds up. In batch computing, that trade-off is acceptable because it gives us excellent global efficiency. In interactive use, however, this serialization is exactly what hurts.
+
+
+Slide 7 — Solution: filebundles
+
+The idea of filebundles is to use information we already have about startup behavior.
+
+For applications like ROOT or Python, the set of files needed immediately after opening a trigger file is often fairly predictable. So instead of discovering those dependencies one file at a time, we can describe them in advance.
+
+When the trigger file is opened, CVMFS detects a matching .cvmfsbundle file and starts prefetching the listed dependencies concurrently with a pool of worker threads. In other words, we replace a long serial chain of requests with a much shorter parallel prefetch phase.
+
+
+Slide 8 — CVMFS cache hierarchy
+
+To place this in context, let me briefly review the cache hierarchy.
+
+At the top, we have the Stratum 0, which is the writable origin managed by the librarian. Below that are the globally distributed Stratum 1 read-only mirrors. Sites often add a Squid proxy to absorb repeated requests from many clients. On each worker node or workstation, CVMFS keeps a local disk cache, and above that Linux has the kernel page cache.
+
+Filebundles operate within this existing hierarchy. They do not change the data model; they simply change when and how the first wave of file requests is issued.
+
+
+Slide 9 — Publishing a filebundle
+
+From the librarian’s point of view, the workflow is simple.
+
+First, choose a suitable trigger file, for example a Python __init__.py or a launcher binary such as root.exe. Second, determine which files are typically read after that trigger. This can be done manually, or with tracing tools such as strace or CVMFS_TRACEFILE. Third, publish a .cvmfsbundle file next to the trigger.
+
+The bundle file is just a small JSON document with minimal metadata and a flat list of dependency paths. In our ROOT example, that list contains roughly 250 files.
+
+
+Slide 10 — Startup benchmark
+
+Here we benchmark the startup performance.
+
+The testbed uses ROOT 6.36.12 deployed in a test CVMFS repository served from localhost, on an AMD EPYC system running AlmaLinux 10.1.
+
+The key result is that filebundles can match local-disk startup performance. In some situations they can even be marginally faster, because the prefetching overlaps work more effectively than the purely on-demand path.
+
+
+Slide 11 — Prefetching thread pool
+
+Prefetching is implemented with a pool of worker threads.
+
+The pool size can be controlled through CVMFS_BUNDLE_POOL_SIZE. In our measurements, performance improves as we add workers, but it saturates around 8 threads, which is also the default.
+
+That is useful because it means we get most of the benefit with a moderate amount of concurrency and without needing aggressive tuning.
+
+
+Slide 12 — Network latency
+
+This is where the feature really starts to shine.
+
+In this experiment, we artificially injected loopback latency using tc qdisc netem. Without filebundles, startup time grows roughly linearly with round-trip time, because the application has to wait for many small dependent fetches in sequence.
+
+With filebundles enabled, startup stays nearly flat over a substantial range, because those requests are prefetched concurrently. In an idealized case like this, the round-trip penalty is paid only for a small number of batches rather than once per file.
+
+
+Slide 13 — Caveats
+
+Of course, this does not mean we should enable filebundles everywhere without thinking.
+
+The total amount of downloaded data stays about the same, but filebundles compress the startup traffic into a short burst. In this benchmark, requests peak at about 1,480 per second with filebundles, versus about 680 without them.
+
+So this feature should be used selectively, especially on interactive systems such as lxplus, where startup latency matters most. Over-prefetching should be avoided, and rollout should be coordinated with proxy and site administrators.
+
+
+Slide 14 — Outlook
+
+There are several directions for future work.
+
+One is FUSE passthrough, available in CVMFS 2.14 on newer kernels, which should reduce overhead further by allowing direct kernel I/O on cached objects after open(). We still need proper benchmarks for that.
+
+Another area is better tooling for filebundle creation in CVMFS 2.15: more automation, more robust updates, and support for specifying chunks in bundle files.
+
+Finally, we are also considering packfiles for small objects in backend storage, to reduce request overhead further. The main challenge there is backward compatibility.
+
+
+Slide 15 — Conclusions
+
+To conclude: CernVM-FS filebundles are a powerful way to accelerate application startup when many files are needed immediately.
+
+They require some librarian effort: tracing startup behavior and publishing a .cvmfsbundle trigger file. But in return, they can reduce cold-start latency dramatically, match local-disk performance, and in some cases even do slightly better.
+
+The feature will be available in CVMFS 2.14.
+
+
+Slide 16 — Contact
+
+Thank you for your attention.
+
+If you want to follow up, the source code is on GitHub, the documentation is on cernvm.cern.ch and cvmfs.readthedocs.org, and discussion happens on the forum and in the CERN Mattermost channel.
+
+Thanks, and I’m happy to take questions.
