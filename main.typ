@@ -30,7 +30,10 @@
 
       #text(size: 18pt, fill: text-dark)[Valentin Volkl (valentin.volkl\@cern.ch), \
       Georgios Christodoulis (georgios.christodoulis\@cern.ch), \
-      Jakob Blomer (jakob.blomer\@cern.ch)]
+      Jakob Blomer (jakob.blomer\@cern.ch)\
+
+      Particular Thanks to Chris Burr (LHCb) for valuable input!
+      ]
     ]
   ]
 
@@ -52,14 +55,20 @@
 
 #include "slides/slide-01-cvmfs-intro.typ"
 
+// scale & infrastructure — world map of stratum servers
+#include "slides/slide-01aa-scale.typ"
+
 // strata + proxy + client-cache hierarchy diagram
 #include "slides/slide-01ab-architecture.typ"
 
 //#include "slides/slide-01b-client-server.typ"
 
 
+// serial baseline — single thread, one file after the other
+#include "slides/slide-01ad-bundle-timeline-serial.typ"
+
 // implementation idea and how it works
-#include "slides/slide-04b-filebundle.typ"
+#include "slides/slide-01ae-bundle-timeline.typ"
 
 // librarian workflow — capture trace, build spec, publish
 //#include "slides/slide-04ba-publish.typ"

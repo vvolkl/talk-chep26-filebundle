@@ -9,18 +9,18 @@
   ]
 
   // Top-left: ROOT install from a release tarball
-  #place(top + left, dx: 0.3in, dy: 1.55in)[
+  #place(top + left, dx: 0.3in, dy: 2.55in)[
     #box(
-      width: 5in,
+      width: 7in,
       radius: 8pt,
       clip: true,
     )[
       #block(
         width: 100%,
         inset: (x: 0.9em, y: 0.75em),
-        fill: rgb("#1E1E1E"),
+        fill: rgb("#1e1e1e"),
       )[
-        #set text(size: 14pt, font: "Menlo")
+        #set text(size: 16pt, font: "Menlo")
         #set par(leading: 0.6em, spacing: 0em)
         #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[wget root.cern/dl/root_v6.36.12-linux.tar.gz]\
         #v(0.4em)
@@ -34,21 +34,21 @@
   ]
 
   // Bottom-left: same goal, resolved via the LCG view on CVMFS
-  #place(top + left, dx: 0.3in, dy: 3.9in)[
+  #place(top + left, dx: 0.3in, dy: 4.9in)[
     #box(
-      width: 5in,
+      width: 9in,
       radius: 8pt,
       clip: true,
     )[
       #block(
-        width: 100%,
+        width: 120%,
         inset: (x: 0.9em, y: 0.75em),
-        fill: rgb("#1E1E1E"),
+        fill: rgb("#0a60d0"),
       )[
-        #set text(size: 14pt, font: "Menlo")
+        #set text(size: 18pt, font: "Menlo")
         #set par(leading: 0.6em, spacing: 0em)
-        #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[source /cvmfs/sft.cern.ch/lcg/views/\\]\
-        #h(2.0em)#text(fill: rgb("#D4D4D4"))[LCG_109/x86_64-el9-gcc13-opt/setup.sh]\
+        #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/\\]\
+        #h(2.0em)#text(fill: rgb("#D4D4D4"))[/x86_64-almalinux9.7-gcc115-opt/bin/setup.sh]\
         #v(0.4em)
         #text(fill: rgb("#4EC9B0"))[\$ ]#text(fill: rgb("#D4D4D4"))[python -c "import ROOT"]
       ]
@@ -69,7 +69,7 @@
       #set par(leading: 0.55em, spacing: 0.85em)
 
       The #kw(highlight)[CernVM-Filesystem] is \ an
-      #kw(highlight)[on-demand], #kw(highlight)[read-only]
+      *on-demand*, *read-only*
       filesystem \for #kw(highlight)[software distribution].
 
       Software is fetched transparently from a

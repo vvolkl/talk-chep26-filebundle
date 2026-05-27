@@ -29,6 +29,8 @@
     CVMFS — cache hierarchy
   ]
 
+\
+
   #v(-0.04 * ph)
 
   #grid(
@@ -39,16 +41,16 @@
     // LEFT — subtitle + architecture diagram
     [
       #set text(size: 15pt, fill: text-mid)
-      Read-only object store with HTTP fan-out and caching at every hop —
-      every byte is content-addressed, so anything in any cache is reusable
-      forever.
+
 
       #v(0.01 * ph)
-      #image("../assets/cvmfs_hierarchy.png", height: 0.59 * ph)
+      #image("../assets/cvmfs_hierarchy.png", height: 0.67 * ph)
     ],
 
     // RIGHT — tiered explanation + analogy
     [
+
+      #v(0.04 * ph)
       #stack(dir: ttb, spacing: 0.3em,
         tier("Stratum 0", accent-purple)[
           The origin. One per repo, owned by the librarian. Where
@@ -77,20 +79,7 @@
       )
 
       #v(0.3em)
-      #box(
-        width: 100%,
-        inset: (x: 0.7em, y: 0.4em),
-        fill: panel-bg,
-        stroke: 1pt + text-light,
-        radius: 5pt,
-      )[
-        #set text(size: 12.5pt, fill: text-mid)
-        #set par(leading: 0.5em)
-        #kw(highlight)[Coffee analogy:] page cache is the freshly brewed
-        pot, disk cache the beans in your cupboard, the squid proxy the
-        store in town, Stratum 1 a regional roaster, Stratum 0 the
-        plantation. Each layer hides the latency of the next.
-      ]
+
     ],
   )
 ]
