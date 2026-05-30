@@ -73,7 +73,7 @@
     #text(size: 10pt, fill: text-light)[t = 0]
   ]
   #place(top + left, dx: 11.10in, dy: 5.95in)[
-    #text(size: 10pt, fill: text-light)[3 × per-file]
+    
   ]
 
   // Marker at end of the 3rd file = serial wall time.

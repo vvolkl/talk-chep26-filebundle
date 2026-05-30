@@ -61,6 +61,12 @@
 // strata + proxy + client-cache hierarchy diagram
 #include "slides/slide-01ab-architecture.typ"
 
+// motivation — client performance numbers from Chris Burr's workshop talk
+#include "slides/slide-01ac-motivation-clientperf.typ"
+
+// same latency picture reproduced on our own testbed
+#include "slides/slide-01ace-latency-testbed.typ"
+
 //#include "slides/slide-01b-client-server.typ"
 
 

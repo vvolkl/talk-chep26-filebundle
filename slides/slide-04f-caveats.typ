@@ -7,7 +7,7 @@
 
   #place(top + left, dx: 0.55in, dy: 0.35in)[
     #text(size: 28pt, weight: "bold", fill: text-dark)[
-      Caveats — bursty load and over-prefetching
+      Caveats — load spikes and over-prefetching
     ]
   ]
 

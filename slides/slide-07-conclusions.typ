@@ -11,27 +11,32 @@
     ]
   ]
 
-  // LEFT — terse takeaways
-  #place(top + left, dx: 0.55in, dy: 1.55in)[
-    #box(width: 5.6in)[
-      #set text(size: 16pt, fill: text-dark)
-      #set par(leading: 0.6em, spacing: 0.9em)
+  // LEFT — takeaways
+  #place(top + left, dx: 0.55in, dy: 1.45in)[
+    #box(width: 4.8in)[
+      #set text(size: 18pt, fill: text-dark)
+      #set par(leading: 0.55em, spacing: 0.75em)
       #set list(indent: 0.4em, body-indent: 0.65em, marker: text(fill: highlight)[•])
 
-      - #kw(highlight)[Filebundles work.] Cold-cache `import ROOT`
-        matches local-disk performance.
+      - #kw(highlight)[CVMFS_PREFETCH_FILEBUNDLES] is a powerful feature that can
+        accelerate the startup of applications that need to read many files.
 
-      - #kw(highlight)[One HTTP round-trip] replaces hundreds of small
-        object fetches --- latency, not bandwidth, was the bottleneck.
+      - Librarians need to trace files read on startup and publish a
+        #text(fill: highlight)[`.cvmfsbundle`] file as trigger for prefetching
 
-      - #kw(highlight)[Drop-in for the client] --- opt-in via spec,
-        no API changes.
+      - Can match local disk performance
+        - Even marginally faster in some circumstances!
 
-      - #kw(highlight)[Caveat:] bursty server load. Tight specs beat
-        generous ones.
-
-      - #kw(highlight)[Next:] FUSE passthrough, offline mode, packfiles.
+      - Available (opt-in) in CVMFS v2.14 release date \~June 2026)
+        
     ]
+  ]
+
+  // LEFT bottom — closing thanks
+  #place(top + left, dx: 0.55in, dy: 5.75in)[
+    #text(size: 26pt, weight: "bold", fill: text-dark)[Thanks! Questions?]\
+    #v(0.5em)
+    #text(size: 18pt, fill: text-mid)[Valentin Volkl --- #link("mailto:valentin.volkl@cern.ch")[#text(fill: accent-blue)[valentin.volkl\@cern.ch]]]
   ]
 
   // RIGHT — violin plot

@@ -37,27 +37,7 @@
     ]
   ]
 
-  // Right: workshop teaser
-  #place(top + right, dx: -0.6in, dy: 1.65in)[
-    #box(
-      width: 4.3in,
-      inset: (x: 1.1em, y: 1.1em),
-      fill: highlight.transparentize(90%),
-      stroke: (left: 3pt + highlight),
-      radius: 6pt,
-    )[
-      #set align(left)
-      #text(size: 16pt, weight: "bold", fill: highlight)[Stay tuned]
-      #v(0.4em)
-      #set text(size: 18pt, fill: text-dark)
-      #set par(leading: 0.55em)
-
-      #kw(highlight)[CernVM Users Workshop]
-      #v(0.1em)
-      #set text(size: 15pt, fill: text-mid)
-      probably February 2027
-    ]
-  ]
+ 
 
   #place(bottom + left, dx: 0.6in, dy: -0.5in)[
     #text(size: 22pt, weight: "bold", fill: text-dark)[Thanks! Questions?]\

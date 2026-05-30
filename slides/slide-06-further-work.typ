@@ -19,43 +19,46 @@
 
   
 
-  // LEFT — FUSE passthrough + Offline mode
+  // LEFT — FUSE passthrough + ZSTD
   #place(top + left, dx: 0.55in, dy: 1.85in)[
     #box(width: 5.85in)[
       #set list(indent: 0.4em, body-indent: 0.65em, marker: text(fill: highlight)[•])
 
-      - #item("FUSE passthrough  (2.14, RHEL10 / kernel ≥ 6.9)", accent-blue)[
+      - #item("FUSE passthrough  (v2.14, RHEL10 / kernel ≥ 6.9)", accent-blue)[
           - General performance improvement thanks to new FUSE feature
-          - On `open()` CVMFS hands the kernel an FD to the backing cache file. 
-          - Subsequent reads bypass FUSE entirely — direct kernel I/O on the cache object. 
-          - Already available in 2.14, but needs to be benchmarked
+          - On `open()`, CVMFS hands the kernel an FD to the backing cache file. Subsequent reads bypass FUSE entirely.
+          - Already available in v2.14, but needs to be benchmarked
         ]
 
       #v(0.7em)
 
-  
+      - #item("ZSTD (v2.15?)", accent-blue)[
+          - Support for ZSTD would mean faster compression-decompression.
+          - Not easy to implement for existing repositories.
+        ]
     ]
   ]
 
-  // RIGHT — Packfiles + closing note
+  // RIGHT — Tooling for Filebundle creation + Packfiles
   #place(top + right, dx: -0.55in, dy: 1.85in)[
     #box(width: 5.85in)[
       #set align(left)
       #set list(indent: 0.4em, body-indent: 0.65em, marker: text(fill: highlight)[•])
 
-          - #item("Offline mode / partial persistency in cache (to be seen)", accent-green)[
-          - Give users possibility to partially persist parts of a CVMFS repository on their workstations.
-          - Integrates with "shrinkwrap" tooling needed for HPC.
+      - #item("Tooling for bundle creation (v2.15)", accent-green)[
+          - Automation where possible
+          - Robust treatment of changes and updates
+          - Specify chunks in bundle files
+          - Integration with build tools (BITS,...)
+          - Benchmarking with experiment frameworks.
         ]
 
-      - #item("Packfiles for small files (2.15?)", accent-amber)[
-          - Use packfiles for small objects already in backend storage to limit the number of network requests. 
-          - Backwards compatibility only with significant effort, however
+      #v(0.7em)
+
+      - #item("Packfiles for small files (v2.15?)", accent-purple)[
+          - Use packfiles for small objects already in backend storage to limit the number of network requests.
+          - Backwards compatibility only with significant effort, however.
         ]
-
-      #v(1.2em)
-
-     
     ]
   ]
 ]

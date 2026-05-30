@@ -12,11 +12,11 @@
 
   // title
   #place(top + left, dx: 0.6in, dy: 0.35in)[
-    #text(size: 34pt, weight: "bold", fill: text-dark)[CernVM-FS scale: and infrastructure]
+    #text(size: 34pt, weight: "bold", fill: text-dark)[CernVM-FS infrastructure and scale]
   ]
 
   // info box on the right with the scale figures
-  #place(top + right, dx: -0.45in, dy: 1.85in)[
+  #place(top + right, dx: -5.45in, dy: 4.05in)[
     #box(
       width: 6.7in,
       inset: (x: 1.0em, y: 0.95em),

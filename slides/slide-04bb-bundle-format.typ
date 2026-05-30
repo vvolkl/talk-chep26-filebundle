@@ -52,12 +52,19 @@
 
   
 
-  // LEFT — step 3 + on-disk layout
-  #place(top + left, dx: 0.5in, dy: 1.55in)[
-    #box(width: 6.0in)[
-      #stack(dir: ttb, spacing: 0.55em, )
-      - Find a suitable triggerfile
-        - #raw("__init__.py") is
+  // LEFT — the three-step librarian workflow
+  #place(top + left, dx: 0.55in, dy: 1.85in)[
+    #box(width: 6.1in)[
+      #set text(size: 22pt, fill: text-dark)
+      #set par(leading: 0.55em)
+      #set enum(numbering: "1.", spacing: 1.0em, body-indent: 0.45em)
+      #set list(marker: text(fill: text-dark)[•], body-indent: 0.45em, spacing: 0.55em)
+
+      + Find a suitable triggerfile
+        - #text(size: 19pt)[#raw("__init__.py"), #raw("root.exe"), …]
+      + Create a list of files that will always be read after the trigger
+        - #text(size: 19pt)[Handcraft, or trace with #raw("strace") or #raw("CVMFS_TRACEFILE")]
+      + Publish it as #raw(".cvmfsbundle-xxx") alongside the triggerfile
     ]
   ]
 
@@ -71,7 +78,7 @@
         stroke: 1.5pt + text-light,
         radius: 6pt,
       )[
-        #set text(size: 14pt, fill: text-dark)
+        #set text(size: 16pt, fill: text-dark)
         #set align(left)
         #stack(dir: ltr, spacing: 0.6em,
           text(weight: "bold")[Example filebundle],
@@ -80,11 +87,11 @@
             fill: ppx-bg,
             stroke: 0.8pt + text-light,
             radius: 3pt,
-          )[#text(size: 11pt, font: "Menlo", fill: text-dark)[ROOT/.cvmfsbundle-\_\_init\_\_.py]],
+          )[#text(size: 13pt, font: "Menlo", fill: text-dark)[ROOT/.cvmfsbundle-\_\_init\_\_.py]],
         )
 
         #v(0.45em)
-        #set text(size: 11.5pt, font: "Menlo", fill: text-dark)
+        #set text(size: 14.5pt, font: "Menlo", fill: text-dark)
         #set par(leading: 0.4em)
         #set align(left)
         #text(fill: text-light)[\#%CVMFS_BUNDLE version=1 encoding=UTF-8] \
@@ -95,21 +102,20 @@
         #h(1em)"dependencies": \[ \
         #h(2em)"/root/lib/libCore.so", \
         #h(2em)"/root/lib/libRIO.so", \
-        #h(2em)"/root/lib/libNet.so", \
-        #h(2em)"/root/lib/libThread.so", \
-        #h(2em)"/root/lib/libMathCore.so", \
+     
         #h(2em)"/root/lib/libcppyy.so", \
         #h(2em)"/root/lib/ROOT/\_application.py", \
         #h(2em)"/root/lib/ROOT/\_facade.py", \
-        #h(2em)"/root/lib/ROOT/\_pythonization/\_\_init\_\_.py", \
+
         #h(2em)#text(fill: text-light)[…  (\~250 paths total)] \
         #h(1em)\] \
         \}
 
-        #v(0.5em)
-        #set text(size: 12pt, fill: text-mid, font: "Atkinson Hyperlegible")
+       /* #v(0.5em)
+        #set text(size: 14pt, fill: text-mid, font: "Atkinson Hyperlegible")
         #set par(leading: 0.5em)
         JSON file with minial metadata, and a flat list of files that are likely to be read after the trigger.
+        */
       ]
     ]
   ]

@@ -17,7 +17,7 @@
     ]
   ]
 
-  #place(top + right, dx: -0.55in, dy: 1.55in)[
+  #place(top + right, dx: -0.95in, dy: 1.55in)[
     #box(width: 3.2in)[
       #set align(left)
       #set text(size: 16pt, fill: text-mid)
@@ -31,7 +31,10 @@
    AlmaLinux 10.1, kernel 6.12
 
 
-      #kw(highlight)[Matches local-disk performance.]
+    Configuration option:
+    #kw(highlight)[*CVMFS_PREFETCH_FILEBUNDLES=ON*]
+
+      Matches local-disk performance.
       
 
     ]
