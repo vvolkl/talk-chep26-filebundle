@@ -10,6 +10,9 @@
 \usepackage{listings}
 \hypersetup{colorlinks=true,citecolor=blue,urlcolor=blue,linkcolor=blue}
 
+\newcommand{\cvmfs}{CernVM-FS}
+\newcommand{\fuse}{FUSE}
+\newcommand{\wlcg}{WLCG}
 % Compact listing style for the JSON bundle example
 \lstdefinestyle{bundle}{
   basicstyle=\ttfamily\footnotesize,
@@ -35,7 +38,7 @@ in interactive use cases}
 \institute{CERN, 1211 Geneva 23, Switzerland}
 
 \abstract{%
-CernVM-FS is a read-only, on-demand file system used to distribute
+\cvmfs\ is a read-only, on-demand file system used to distribute
 scientific software to the Worldwide LHC Computing Grid and many
 communities beyond high-energy physics. Its lazy, per-file fetching is
 highly efficient for batch computing, but it adds noticeable latency to
@@ -45,13 +48,13 @@ another. We present \emph{filebundles}, a mechanism that exploits the
 predictable file-access pattern at application startup. A small bundle
 specification, published next to a trigger file, declares the set of
 files needed immediately after the trigger is opened. When a client
-opens the trigger, CernVM-FS prefetches the listed dependencies
+opens the trigger, \cvmfs\ prefetches the listed dependencies
 concurrently using a pool of worker threads, replacing a long serial
 chain of requests with a short parallel prefetch phase. On a ROOT
 startup benchmark, filebundles bring performance into the local-disk
 range and keep startup time nearly flat as network latency grows, while
 the on-demand baseline degrades approximately linearly. Filebundles are
-an opt-in feature in CernVM-FS 2.14.
+an opt-in feature in \cvmfs\ 2.14.
 }
 
 \maketitle
@@ -60,18 +63,35 @@ an opt-in feature in CernVM-FS 2.14.
 \section{Introduction}
 \label{sec-intro}
 
-CernVM-FS~\cite{ref-cvmfs} is a global, read-only file system for
-distributing scientific software. Rather than downloading and unpacking
-a complete software stack in advance, clients access a global namespace
-under \texttt{/cvmfs}. Files are fetched when they are opened;
-downloading, decompression, and caching are transparent to the user.
-
-CernVM-FS is a core component of the Worldwide LHC Computing Grid and
+\cvmfs~\cite{ref-cvmfs} is a global, read-only file system for
+distributing scientific software. 
+It is a core component of the Worldwide LHC Computing Grid ( \wlcg\ )and
 is also used by communities beyond high-energy physics, including
-Euclid, LIGO, LSST, SKA, and EESSI. The infrastructure has about
-fifteen Stratum~1 mirror servers in Europe, the Americas, and Asia.
-The \texttt{/cvmfs} namespace contains about $3.3\times10^{10}$ files
-and 2~PB of data; it also serves more than 8000 container images.
+Euclid, LIGO, LSST, SKA, and EESSI.
+
+\cvmfs\ uses a distributed architecture (Fig.~\ref{fig-hierarchy}), where software is originally published in Stratum0 - a server which is considered the source of truth, in the form of repositories.
+The contents of Stratum0 are then cloned in a series of geographically scattered mirror servers (Stratum1's), arranged to facilitate the different user sites, in order to mitigate the traffic of Stratum0.
+Users can access the contents of a repository either directly from a Stratum (0 or 1) (not encouraged) or via a series of forward proxies that site administrators configure, for better load balancing and caching.
+\wlcg\ has about fifteen Stratum~1 mirror servers in Europe, the Americas, and Asia, managing about $3.3\times10^{10}$ files
+and 2~PB of data and more than 8000 container images.
+
+Data (repository contents) on \cvmfs\ are stored in a content addressable format.
+During publication files are chunked, hashed and compressed.
+A filename is associated to its hash (or hashes in the case of chunking) through dedicated dictionaries called catalogs.
+Catalogs can also be nested in order to sustain the rapid repository growth.
+
+From the users perspective, repositories can be accessed via a global namespace, by default under /cvmfs in their machine.
+This is done by the \cvmfs\ client, which is a \fuse\ based filesystem.
+Typically, there is some disk allocated space in the user's machine that works as a local cache.
+\cvmfs\ is performing cache cleanup using an LRU policy.
+
+For simple listing operations, the client will fetch the associated catalogs which contain all the information necessary.
+When an \emph{open()}  is issued from the user, the client will lookup for the correct hash, and will issue a \emph{fetch()}.
+During fetching, the client will download the compressed hash, will decompress it and store it in the local cache, available for reading.
+On a \emph{read()} the client will make the contents of the files available to the user immediately, or will trigger more \emph{fetch()} operations in case the file is chunked, or the hash has already been evicted from the cache.
+According to this mechanism, on first access the cache is empty (cold cache) and the contents of the repository become available after they are needed.
+Downloading, decompression, and caching are transparent to the user.
+
 
 This lazy, content-addressed model is extremely effective for
 distributed batch computing, where the benefits of a shared software
@@ -81,12 +101,23 @@ startup noticeably slower than from local disk. This paper presents
 \emph{filebundles}, a mechanism that reduces that startup latency by
 prefetching the files an application needs immediately after launch.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\textwidth]{figures/cvmfs_hierarchy.png}
+\caption{The \cvmfs\ cache hierarchy: a writable Stratum~0 origin,
+globally distributed Stratum~1 mirrors, site-level Squid proxies, and
+per-client disk and kernel page caches. Filebundles change only the
+timing of the first wave of requests, not the data model.}
+\label{fig-hierarchy}
+\end{figure}
+\clearpage % Keep the Section 2 hierarchy figure out of the bundle listing.
+
 %======================================================================
 \section{Motivation}
 \label{sec-motivation}
 
 At the CernVM Users Workshop in 2022, Chris Burr (LHCb) reported that
-interactive CernVM-FS use can be roughly three to five times slower
+interactive \cvmfs\ use can be roughly three to five times slower
 than local disk, even with a hot cache~\cite{ref-burr}. This overhead is
 usually acceptable for distributed batch workloads, but is noticeable
 when starting an interactive analysis environment.
@@ -97,13 +128,13 @@ takes about 2.47~s. Using the same software stack from \texttt{/cvmfs}
 with a cold cache, the time increases to about 4.69~s. In this setup
 the network path is very short, so the slowdown is not primarily a
 bandwidth problem. It confirms that a significant part of the delay
-comes from the way CernVM-FS serves many files on demand.
+comes from the way \cvmfs\ serves many files on demand.
 
 \subsection{Where does the time go?}
 \label{sec-time}
 
 When an application such as ROOT starts, it opens many files one after
-another. On a cold cache, for each file CernVM-FS handles a FUSE
+another. On a cold cache, for each file \cvmfs\ handles a FUSE
 upcall, issues an HTTP request, waits for the round trip, downloads the
 object, decompresses it and returns the data. This per-file overhead is
 paid again and again, and because the requests are dependent they are
@@ -112,28 +143,17 @@ the serialized per-file latency adds up. In batch computing this
 trade-off is acceptable; in interactive use the serialization is
 precisely what hurts.
 
-It is useful to recall the CernVM-FS cache hierarchy
+It is useful to recall the \cvmfs\ cache hierarchy
 (Fig.~\ref{fig-hierarchy}) in which any optimization has to operate. At
 the top is the Stratum~0, the writable origin managed by the
 repository maintainer (``librarian''). Below it are the globally
 distributed Stratum~1 read-only mirrors. Sites typically add a Squid
 forward proxy to absorb repeated requests from many clients. On each
-worker node or workstation CernVM-FS keeps a local disk cache, and
+worker node or workstation \cvmfs\ keeps a local disk cache, and
 above that the Linux kernel maintains the page cache. Filebundles
 operate within this existing hierarchy. They do not change the data
 model; they only change \emph{when} and \emph{how} the first wave of
 file requests is issued.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.78\textwidth]{figures/cvmfs_hierarchy.png}
-\caption{The CernVM-FS cache hierarchy: a writable Stratum~0 origin,
-globally distributed Stratum~1 mirrors, site-level Squid proxies, and
-per-client disk and kernel page caches. Filebundles change only the
-timing of the first wave of requests, not the data model.}
-\label{fig-hierarchy}
-\end{figure}
-\clearpage % Keep the Section 2 hierarchy figure out of the bundle listing.
 
 %======================================================================
 \section{Filebundles}
@@ -170,7 +190,7 @@ keyed on the Python package \texttt{\_\_init\_\_.py}, contains roughly
 }
 \end{lstlisting}
 
-When a client opens the trigger file, CernVM-FS detects the matching
+When a client opens the trigger file, \cvmfs\ detects the matching
 \texttt{.cvmfsbundle} specification and begins prefetching the listed
 dependencies concurrently, using a pool of worker threads, while the
 application continues to run. In effect, a long serial chain of
@@ -203,7 +223,7 @@ bundle, after which the trigger behaves like an ordinary file.
 \label{sec-results}
 
 Unless noted otherwise, the benchmarks use ROOT~6.36.12 in a test
-CernVM-FS repository served from \texttt{localhost}. The client ran on
+\cvmfs\ repository served from \texttt{localhost}. The client ran on
 an AMD EPYC~7302 system (2$\times$16 cores, 64 threads at
 ${\sim}3.0$~GHz, 251~GB RAM), with AlmaLinux~10.1 and kernel~6.12.
 Using \texttt{localhost} removes external network effects, exposing the
@@ -213,8 +233,8 @@ per-file software overhead.
 \label{sec-startup}
 
 Figure~\ref{fig-violin} compares ROOT startup times on local disk, on
-CernVM-FS with a cold cache and no filebundles, and on CernVM-FS with
-filebundles enabled. In this benchmark, filebundles bring CernVM-FS
+\cvmfs\ with a cold cache and no filebundles, and on \cvmfs\ with
+filebundles enabled. In this benchmark, filebundles bring \cvmfs
 startup time to the local-disk range. Some measurements are marginally
 faster than local disk, consistent with overlap between downloading and
 decompression in the prefetch path.
@@ -223,7 +243,7 @@ decompression in the prefetch path.
 \centering
 \includegraphics[width=0.62\textwidth]{figures/violin_bundle.pdf}
 \caption{Distribution of ROOT startup times. With filebundles enabled
-(\texttt{CVMFS\_PREFETCH\_FILEBUNDLES=ON}), CernVM-FS startup matches
+(\texttt{CVMFS\_PREFETCH\_FILEBUNDLES=ON}), \cvmfs\ startup matches
 local-disk performance, closing the gap to the on-demand cold-cache
 baseline.}
 \label{fig-violin}
@@ -294,10 +314,10 @@ req/s versus ${\sim}680$ req/s without bundles).}
 \section{Outlook}
 \label{sec-outlook}
 
-FUSE passthrough in CernVM-FS~2.14 on recent kernels can hand the
+FUSE passthrough in \cvmfs~2.14 on recent kernels can hand the
 kernel a descriptor for the cached backing file at \texttt{open()}, so
 subsequent reads bypass FUSE. Its interaction with filebundles still
-needs to be benchmarked. Planned work for CernVM-FS~2.15 includes tools
+needs to be benchmarked. Planned work for \cvmfs~2.15 includes tools
 for creating and updating bundles, support for file chunks in bundle
 specifications, and integration with build tools. Packfiles, which
 would combine small backend objects to reduce request counts, are also
@@ -313,13 +333,13 @@ repository maintainer to trace startup behaviour and publish a
 \texttt{.cvmfsbundle} specification next to the trigger. In the ROOT
 benchmark, they reduce cold-start time to the local-disk range and make
 startup less sensitive to added round-trip latency. Filebundles are an
-opt-in CernVM-FS~2.14 feature, enabled per mount with
+opt-in \cvmfs~2.14 feature, enabled per mount with
 \texttt{CVMFS\_PREFETCH\_FILEBUNDLES}. They are best suited to
 interactive systems, where the prefetch burst can be managed.
 
 \vspace{0.5em}
 \noindent\textbf{Acknowledgements.} We thank Chris Burr (LHCb) for the
-input that motivated this work, and the CernVM-FS team at CERN.
+input that motivated this work, and the \cvmfs\ team at CERN.
 
 \vspace{0.3em}
 \noindent\emph{Disclosure: AI-based tools were used to assist with
@@ -345,7 +365,7 @@ framework, Nucl.\ Instrum.\ Methods Phys.\ Res.\ A \textbf{389},
 81--86 (1997). \url{https://doi.org/10.1016/S0168-9002(97)00048-X}
 
 \bibitem{ref-docs}
-CernVM-FS documentation. \url{https://cvmfs.readthedocs.io/}
+\cvmfs\ documentation. \url{https://cvmfs.readthedocs.io/}
 
 \end{thebibliography}
 
