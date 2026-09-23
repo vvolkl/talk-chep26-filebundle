@@ -65,7 +65,7 @@ an opt-in feature in \cvmfs\ 2.14.
 
 \cvmfs~\cite{ref-cvmfs} is a global, read-only file system for
 distributing scientific software. 
-It is a core component of the Worldwide LHC Computing Grid ( \wlcg\ )and
+It is a core component of the Worldwide LHC Computing Grid ( \wlcg\ ) and
 is also used by communities beyond high-energy physics, including
 Euclid, LIGO, LSST, SKA, and EESSI.
 
@@ -80,7 +80,7 @@ During publication files are chunked, hashed and compressed.
 A filename is associated to its hash (or hashes in the case of chunking) through dedicated dictionaries called catalogs.
 Catalogs can also be nested in order to sustain the rapid repository growth.
 
-From the users perspective, repositories can be accessed via a global namespace, by default under /cvmfs in their machine.
+From the users perspective, repositories can be accessed via a global namespace, by default under  \texttt{/cvmfs} in their machine.
 This is done by the \cvmfs\ client, which is a \fuse\ based filesystem.
 Typically, there is some disk allocated space in the user's machine that works as a local cache.
 \cvmfs\ is performing cache cleanup using an LRU policy.
@@ -116,13 +116,20 @@ timing of the first wave of requests, not the data model.}
 \section{Motivation}
 \label{sec-motivation}
 
+\cvmfs\ was designed from the beginning with great emphasis on performance.
+Its architecture portends some weak points that have thoroughly been investigated so far.
+The first and major one is the overhead added by the network. 
+This series of mirror and proxy servers are aiming to improve data locality, opting to minimize its non negligible impact.
+The second factor is the overhead added by \fuse\, which is a performance penalty that can not be avoided.
+\fuse\ allows the filesystem to be designed in user space, which is a strong requirement by the community (since an interference with the kernel is not considered a viable option).
+
 At the CernVM Users Workshop in 2022, Chris Burr (LHCb) reported that
 interactive \cvmfs\ use can be roughly three to five times slower
-than local disk, even with a hot cache~\cite{ref-burr}. This overhead is
+than local disk~\cite{ref-burr}. This overhead is
 usually acceptable for distributed batch workloads, but is noticeable
 when starting an interactive analysis environment.
 
-The effect is easy to reproduce on a controlled testbed. Installing
+The behavior is easy to reproduce on a controlled testbed. Installing
 ROOT from a release tarball on local disk, importing ROOT in Python
 takes about 2.47~s. Using the same software stack from \texttt{/cvmfs}
 with a cold cache, the time increases to about 4.69~s. In this setup
@@ -133,27 +140,17 @@ comes from the way \cvmfs\ serves many files on demand.
 \subsection{Where does the time go?}
 \label{sec-time}
 
-When an application such as ROOT starts, it opens many files one after
+When an application such as ROOT starts, it opens many dependent files one after
 another. On a cold cache, for each file \cvmfs\ handles a FUSE
 upcall, issues an HTTP request, waits for the round trip, downloads the
-object, decompresses it and returns the data. This per-file overhead is
-paid again and again, and because the requests are dependent they are
-effectively serialized. The total amount of work is unremarkable, but
-the serialized per-file latency adds up. In batch computing this
-trade-off is acceptable; in interactive use the serialization is
-precisely what hurts.
+object, decompresses it , stores it in cache and returns the data. 
+This per-file overhead is paid for every dependent file, and is
+effectively serialized among the dependencies. 
+The per-file amount of work is unremarkable, but the latency across the multiple serialized requests adds up, and becomes noticeable in interactive use.
 
-It is useful to recall the \cvmfs\ cache hierarchy
-(Fig.~\ref{fig-hierarchy}) in which any optimization has to operate. At
-the top is the Stratum~0, the writable origin managed by the
-repository maintainer (``librarian''). Below it are the globally
-distributed Stratum~1 read-only mirrors. Sites typically add a Squid
-forward proxy to absorb repeated requests from many clients. On each
-worker node or workstation \cvmfs\ keeps a local disk cache, and
-above that the Linux kernel maintains the page cache. Filebundles
-operate within this existing hierarchy. They do not change the data
-model; they only change \emph{when} and \emph{how} the first wave of
-file requests is issued.
+The idea behind filebundles is that we cant take advantage of the fact that the dependencies of an application are or can be known at the time of the publication of the repository, and all dependencies can be fetched simultaneously after the main (trigger) file is opened.
+Filebundles operate within the existing hierarchy of \cvmfs\ (Fig.~\ref{fig-hierarchy}). They do not change the data
+model; they only change \emph{when} and \emph{how} the first wave of file requests is fetched to the local cache.
 
 %======================================================================
 \section{Filebundles}
