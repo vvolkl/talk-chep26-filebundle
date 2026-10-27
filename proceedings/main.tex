@@ -76,7 +76,7 @@ Euclid, LIGO, LSST, SKA, and EESSI.
 \cvmfs\ uses a distributed architecture (Fig.~\ref{fig-hierarchy}), where software is originally published in a Stratum0 servere - is considered the source of truth, in the form of repositories.
 The contents of Stratum0 are then cloned in a series of geographically scattered mirror servers (Stratum1's), arranged to facilitate the different user sites, in order to mitigate the traffic of Stratum0.
 Users can access the contents of a repository either directly from a Stratum (0 or 1) (not encouraged) or via a series of forward proxies that site administrators configure, for better load balancing and caching.
-\wlcg\ has about fifteen Stratum~1 mirror servers in Europe, the Americas, and Asia, managing about $3.3\times10^{10}$ files
+\wlcg\ has about fifteen Stratum~1 mirror servers in Europe, the Americas, Australia, and Asia, managing about $3.3\times10^{10}$ files
 and 2~PB of data and more than 8000 container images.
 
 Data (repository contents) on \cvmfs\ are stored in a content addressable format.
@@ -87,7 +87,8 @@ Catalogs can also be nested in order to keep catalog operations manageable for l
 From the users perspective, repositories can be accessed via a global namespace, by default under  \emph{/cvmfs} in their machine.
 This is done by the \cvmfs\ client, which is a \fuse\ based filesystem.
 Typically, there is some disk allocated space in the user's machine that works as a local cache.
-\cvmfs\ is performing cache cleanup using an LRU policy.
+\cvmfs\ is performing cache cleanup using an LRU policy; once the quota limit is reached, the cache manager will elect some files for eviction prioritizing those least recently used.
+The quota limit is a soft limit, and cleanup efforts will continue until the cache size reaches a specific target (by default half the size of the quota limit). 
 
 For simple listing operations, the client will fetch the associated catalogs which contain all the information necessary.
 When an \emph{open()}  is issued from the user, the client will lookup for the correct hash, and will issue a \emph{fetch()}.
@@ -107,7 +108,7 @@ prefetching the files an application needs immediately after launch.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.78\textwidth]{figures/cvmfs_hierarchy.png}
+\includegraphics[width=0.78\textwidth]{figures/cvmfs_hierarchy_vectorized.pdf}
 \caption{The \cvmfs\ cache hierarchy: a writable Stratum~0 origin,
 globally distributed Stratum~1 mirrors, site-level Squid proxies, and
   per-client disk and kernel page caches. The \filebundle\ mechanism operate on the same hierarchy, only changing proxy's workload, creating short bursts of download requests on the first access of a trigger file.}
@@ -235,7 +236,7 @@ per-file software overhead.
 \subsection{Startup performance}
 \label{sec-startup}
 
-Figure~\ref{fig-violin} compares ROOT startup times on local disk, on
+Figure~\ref{fig-violin} compares ROOT startup times on local disk, on 
 \cvmfs\ with a cold cache and no \filebundles, and on \cvmfs\ with
 \filebundles\ enabled. In this benchmark, \filebundles\ bring \cvmfs\
 startup time to the local-disk range. Some measurements are marginally
@@ -245,7 +246,7 @@ decompression in the prefetch path.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.62\textwidth]{figures/violin_bundle.pdf}
-\caption{Distribution of ROOT startup times. With \filebundles\ enabled
+  \caption{A violin plot of the distribution of startup times over ten repetitions of importing ROOT. With \filebundles\ enabled
 (\emph{CVMFS\_PREFETCH\_FILEBUNDLES=ON}), \cvmfs\ startup matches
 local-disk performance, closing the gap to the on-demand cold-cache
 baseline.}
@@ -320,9 +321,11 @@ req/s versus ${\sim}680$ req/s without bundles).}
 \section{Outlook}
 \label{sec-outlook}
 
-FUSE passthrough in \cvmfs~2.14 on recent kernels can hand the
-kernel a descriptor for the cached backing file at \emph{open()}, so
-subsequent reads bypass FUSE. This eliminates the overhead imposed by \fuse\ for unchunked files. Its potential to improve the startup time of application combined with \filebundles\ still
+\cvmfs\ since version 2.14 takes advantage of the \fuse\ passthrough mechanism introduced in the linux kernel version 6.9 (available in EL10 and on), and can hand over to the
+kernel a descriptor for the cached backing file during \emph{open()}, so
+subsequent reads bypass FUSE. 
+This feature works only for unchunked files and eliminates the overhead imposed by the \fuse\ call hierarchy. 
+Its potential to improve the startup time of application combined with \filebundles\ still
 needs to be benchmarked. Planned work for \cvmfs~2.15 includes tools
 for creating and updating bundles, support for file chunks in bundle
 specifications, and integration with build tools. Packfiles, which
